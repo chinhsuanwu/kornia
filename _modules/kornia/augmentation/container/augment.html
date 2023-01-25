@@ -318,7 +318,7 @@
 <span class="kn">from</span> <span class="nn">kornia.core</span> <span class="kn">import</span> <span class="n">Module</span><span class="p">,</span> <span class="n">Tensor</span>
 <span class="kn">from</span> <span class="nn">kornia.geometry.boxes</span> <span class="kn">import</span> <span class="n">Boxes</span><span class="p">,</span> <span class="n">VideoBoxes</span>
 <span class="kn">from</span> <span class="nn">kornia.geometry.keypoints</span> <span class="kn">import</span> <span class="n">Keypoints</span><span class="p">,</span> <span class="n">VideoKeypoints</span>
-<span class="kn">from</span> <span class="nn">kornia.utils</span> <span class="kn">import</span> <span class="n">eye_like</span>
+<span class="kn">from</span> <span class="nn">kornia.utils</span> <span class="kn">import</span> <span class="n">eye_like</span><span class="p">,</span> <span class="n">is_autocast_enabled</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AugmentationSequential&quot;</span><span class="p">]</span>
 
@@ -326,35 +326,37 @@
 <div class="viewcode-block" id="AugmentationSequential"><a class="viewcode-back" href="../../../../augmentation.container.html#kornia.augmentation.container.AugmentationSequential">[docs]</a><span class="k">class</span> <span class="nc">AugmentationSequential</span><span class="p">(</span><span class="n">ImageSequential</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;AugmentationSequential for handling multiple input types like inputs, masks, keypoints at once.</span>
 
-<span class="sd">    .. image:: https://kornia-tutorials.readthedocs.io/en/latest/_images/data_augmentation_sequential_5_1.png</span>
-<span class="sd">        :width: 49 %</span>
-<span class="sd">    .. image:: https://kornia-tutorials.readthedocs.io/en/latest/_images/data_augmentation_sequential_7_0.png</span>
-<span class="sd">        :width: 49 %</span>
+<span class="sd">    .. image:: _static/img/AugmentationSequential.png</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        *args: a list of kornia augmentation modules.</span>
-<span class="sd">        data_keys: the input type sequential for applying augmentations.</span>
-<span class="sd">            Accepts &quot;input&quot;, &quot;mask&quot;, &quot;bbox&quot;, &quot;bbox_xyxy&quot;, &quot;bbox_xywh&quot;, &quot;keypoints&quot;.</span>
-<span class="sd">        same_on_batch: apply the same transformation across the batch.</span>
-<span class="sd">            If None, it will not overwrite the function-wise settings.</span>
-<span class="sd">        keepdim: whether to keep the output shape the same as input (True) or broadcast it</span>
-<span class="sd">            to the batch form (False). If None, it will not overwrite the function-wise settings.</span>
-<span class="sd">        random_apply: randomly select a sublist (order agnostic) of args to</span>
-<span class="sd">            apply transformation.</span>
-<span class="sd">            If int, a fixed number of transformations will be selected.</span>
-<span class="sd">            If (a,), x number of transformations (a &lt;= x &lt;= len(args)) will be selected.</span>
-<span class="sd">            If (a, b), x number of transformations (a &lt;= x &lt;= b) will be selected.</span>
-<span class="sd">            If True, the whole list of args will be processed as a sequence in a random order.</span>
-<span class="sd">            If False, the whole list of args will be processed as a sequence in original order.</span>
-<span class="sd">        transformation_matrix: computation mode for the chained transformation matrix,</span>
-<span class="sd">            via `.transform_matrix` attribute.</span>
-<span class="sd">            If `silence`, transformation matrix will be computed silently and the non-rigid modules</span>
-<span class="sd">                will be ignored as identity transformations.</span>
-<span class="sd">            If `rigid`, transformation matrix will be computed silently and the non-rigid modules</span>
-<span class="sd">                will trigger errors.</span>
-<span class="sd">            If `skip`, transformation matrix will be totally ignored.</span>
-<span class="sd">        extra_args: to control the behaviour for each datakeys. By default, masks are handled</span>
-<span class="sd">            by nearest interpolation strategies.</span>
+
+<span class="sd">        data_keys: the input type sequential for applying augmentations. Accepts &quot;input&quot;, &quot;mask&quot;, &quot;bbox&quot;, &quot;bbox_xyxy&quot;,</span>
+<span class="sd">                   &quot;bbox_xywh&quot;, &quot;keypoints&quot;.</span>
+
+<span class="sd">        same_on_batch: apply the same transformation across the batch. If None, it will not overwrite the function-wise</span>
+<span class="sd">                       settings.</span>
+
+<span class="sd">        keepdim: whether to keep the output shape the same as input (True) or broadcast it to the batch form (False).</span>
+<span class="sd">                 If None, it will not overwrite the function-wise settings.</span>
+
+<span class="sd">        random_apply: randomly select a sublist (order agnostic) of args to apply transformation.</span>
+<span class="sd">                      If int, a fixed number of transformations will be selected.</span>
+<span class="sd">                      If (a,), x number of transformations (a &lt;= x &lt;= len(args)) will be selected.</span>
+<span class="sd">                      If (a, b), x number of transformations (a &lt;= x &lt;= b) will be selected.</span>
+<span class="sd">                      If True, the whole list of args will be processed as a sequence in a random order.</span>
+<span class="sd">                      If False, the whole list of args will be processed as a sequence in original order.</span>
+
+<span class="sd">        transformation_matrix: computation mode for the chained transformation matrix, via `.transform_matrix`</span>
+<span class="sd">                               attribute.</span>
+<span class="sd">                               If `silence`, transformation matrix will be computed silently and the non-rigid modules</span>
+<span class="sd">                               will be ignored as identity transformations.</span>
+<span class="sd">                               If `rigid`, transformation matrix will be computed silently and the non-rigid modules</span>
+<span class="sd">                               will trigger errors.</span>
+<span class="sd">                               If `skip`, transformation matrix will be totally ignored.</span>
+
+<span class="sd">        extra_args: to control the behaviour for each datakeys. By default, masks are handled by nearest interpolation</span>
+<span class="sd">                    strategies.</span>
 
 <span class="sd">    .. note::</span>
 <span class="sd">        Mix augmentations (e.g. RandomMixUp, RandomCutMix) can only be working with &quot;input&quot; data key.</span>
@@ -448,6 +450,10 @@
 
     <span class="n">_transform_matrix</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span>
     <span class="n">_transform_matrices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">_boxes_options</span> <span class="o">=</span> <span class="p">{</span><span class="n">DataKey</span><span class="o">.</span><span class="n">BBOX</span><span class="p">,</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">BBOX_XYXY</span><span class="p">,</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">BBOX_XYWH</span><span class="p">}</span>
+    <span class="n">_keypoints_options</span> <span class="o">=</span> <span class="p">{</span><span class="n">DataKey</span><span class="o">.</span><span class="n">KEYPOINTS</span><span class="p">}</span>
+    <span class="n">_img_msk_options</span> <span class="o">=</span> <span class="p">{</span><span class="n">DataKey</span><span class="o">.</span><span class="n">INPUT</span><span class="p">,</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">MASK</span><span class="p">}</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -591,11 +597,11 @@
     <span class="k">def</span> <span class="nf">_arguments_preproc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">DataType</span><span class="p">,</span> <span class="n">data_keys</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">DataKey</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">DataType</span><span class="p">]:</span>
         <span class="n">inp</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">DataType</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">arg</span><span class="p">,</span> <span class="n">dcate</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">data_keys</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dcate</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="n">DataKey</span><span class="o">.</span><span class="n">INPUT</span><span class="p">,</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">MASK</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dcate</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_img_msk_options</span><span class="p">:</span>
                 <span class="n">inp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dcate</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="n">DataKey</span><span class="o">.</span><span class="n">KEYPOINTS</span><span class="p">]:</span>
+            <span class="k">elif</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dcate</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keypoints_options</span><span class="p">:</span>
                 <span class="n">inp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_preproc_keypoints</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">dcate</span><span class="p">))</span>
-            <span class="k">elif</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dcate</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="n">DataKey</span><span class="o">.</span><span class="n">BBOX</span><span class="p">,</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">BBOX_XYXY</span><span class="p">,</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">BBOX_XYWH</span><span class="p">]:</span>
+            <span class="k">elif</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dcate</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boxes_options</span><span class="p">:</span>
                 <span class="n">inp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_preproc_boxes</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">dcate</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;input type of </span><span class="si">{</span><span class="n">dcate</span><span class="si">}</span><span class="s2"> is not implemented.&quot;</span><span class="p">)</span>
@@ -606,16 +612,29 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">DataType</span><span class="p">]:</span>
         <span class="n">out</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">DataType</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">in_arg</span><span class="p">,</span> <span class="n">out_arg</span><span class="p">,</span> <span class="n">dcate</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">in_args</span><span class="p">,</span> <span class="n">out_args</span><span class="p">,</span> <span class="n">data_keys</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dcate</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="n">DataKey</span><span class="o">.</span><span class="n">INPUT</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dcate</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_img_msk_options</span><span class="p">:</span>
                 <span class="c1"># It is tensor type already.</span>
                 <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out_arg</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dcate</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="n">DataKey</span><span class="o">.</span><span class="n">MASK</span><span class="p">]:</span>
-                <span class="c1"># TODO: may add the float to integer, etc.</span>
-                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out_arg</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dcate</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="n">DataKey</span><span class="o">.</span><span class="n">KEYPOINTS</span><span class="p">]:</span>
-                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_postproc_keypoint</span><span class="p">(</span><span class="n">in_arg</span><span class="p">,</span> <span class="n">cast</span><span class="p">(</span><span class="n">Keypoints</span><span class="p">,</span> <span class="n">out_arg</span><span class="p">),</span> <span class="n">dcate</span><span class="p">))</span>
-            <span class="k">elif</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dcate</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="n">DataKey</span><span class="o">.</span><span class="n">BBOX</span><span class="p">,</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">BBOX_XYXY</span><span class="p">,</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">BBOX_XYWH</span><span class="p">]:</span>
-                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_postproc_boxes</span><span class="p">(</span><span class="n">in_arg</span><span class="p">,</span> <span class="n">cast</span><span class="p">(</span><span class="n">Boxes</span><span class="p">,</span> <span class="n">out_arg</span><span class="p">),</span> <span class="n">dcate</span><span class="p">))</span>
+                <span class="c1"># TODO: may add the float to integer (for masks), etc.</span>
+
+            <span class="k">elif</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dcate</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keypoints_options</span><span class="p">:</span>
+                <span class="n">_out_k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postproc_keypoint</span><span class="p">(</span><span class="n">in_arg</span><span class="p">,</span> <span class="n">cast</span><span class="p">(</span><span class="n">Keypoints</span><span class="p">,</span> <span class="n">out_arg</span><span class="p">),</span> <span class="n">dcate</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">is_autocast_enabled</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">in_arg</span><span class="p">,</span> <span class="p">(</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Keypoints</span><span class="p">)):</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_out_k</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="n">_out_k</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">in_arg</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">_out_k</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">_out_k</span> <span class="o">=</span> <span class="n">_out_k</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">in_arg</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_out_k</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">DataKey</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dcate</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boxes_options</span><span class="p">:</span>
+                <span class="n">_out_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postproc_boxes</span><span class="p">(</span><span class="n">in_arg</span><span class="p">,</span> <span class="n">cast</span><span class="p">(</span><span class="n">Boxes</span><span class="p">,</span> <span class="n">out_arg</span><span class="p">),</span> <span class="n">dcate</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">is_autocast_enabled</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">in_arg</span><span class="p">,</span> <span class="p">(</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Boxes</span><span class="p">)):</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_out_b</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="n">_out_b</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">in_arg</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">_out_b</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">_out_b</span> <span class="o">=</span> <span class="n">_out_b</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">in_arg</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_out_b</span><span class="p">)</span>
+
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;input type of </span><span class="si">{</span><span class="n">dcate</span><span class="si">}</span><span class="s2"> is not implemented.&quot;</span><span class="p">)</span>
 
@@ -702,6 +721,7 @@
             <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;xywh&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported mode `</span><span class="si">{</span><span class="n">DataKey</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dcate</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">`.&quot;</span><span class="p">)</span>
+
         <span class="c1"># TODO: handle 3d scenarios</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">in_arg</span><span class="p">,</span> <span class="p">(</span><span class="n">Boxes</span><span class="p">,)):</span>
             <span class="k">return</span> <span class="n">out_arg</span>
